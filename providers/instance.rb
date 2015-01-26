@@ -83,11 +83,20 @@ action :configure do
     end
 
     # Make a copy of the init script for this instance
-    execute "/etc/init.d/#{instance}" do
-      command <<-EOH
-        cp /etc/init.d/#{base_instance} /etc/init.d/#{instance}
-        perl -i -pe 's/#{base_instance}/#{instance}/g' /etc/init.d/#{instance}
-      EOH
+    case node['platform']
+    when 'centos', 'redhat', 'fedora', 'amazon', 'oracle'
+      execute "/etc/init.d/#{instance}" do
+        command <<-EOH
+          ln /etc/init.d/#{base_instance} /etc/init.d/#{instance}
+        EOH
+      end
+    else
+      execute "/etc/init.d/#{instance}" do
+        command <<-EOH
+          cp /etc/init.d/#{base_instance} /etc/init.d/#{instance}
+          perl -i -pe 's/#{base_instance}/#{instance}/g' /etc/init.d/#{instance}
+        EOH
+      end
     end
   end
 
